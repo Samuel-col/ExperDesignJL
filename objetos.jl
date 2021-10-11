@@ -158,7 +158,7 @@ function pValue1(mod::Model)
     gl = gl1(mod)
     fStats = FStat1(mod)
     for i = 1:length(fStats)
-        push!(pv, ccdf(FDist(gl[i],gl[end-2]),fStats[i]))
+        push!(pv, ccdf(FDist(gl[i],gl[end-1]),fStats[i]))
     end
     return tuple(pv...)
 end
@@ -195,9 +195,97 @@ end
 
 #--- Anova tipo II
 
+function SC2(mod::Model)
+    X2 = []
+    for i = 2:length(mod.Xi)
+        tmp = mod.Xi[1]
+        for j = 2:length(mod.Xi)
+            if i!=j
+                tmp = hcat(tmp,mod.Xi[j])
+            end
+        end
+        push!(X2,tmp)
+    end
+    sc = []
+    for Xp in X2
+        push!(sc,mod.y'*(proy(mod.X)-proy(Xp))*mod.y)
+    end
+    return tuple(sc...)
+end
+
+function gl2(mod::Model)
+    gl = []
+    for i = 2:length(mod.Xi) # Grados de libertad de la regresión
+        if rank(mod.Xi[i])!=1
+            push!(gl,rank(mod.Xi[i])-1)
+        else
+            push!(gl,1)
+        end
+    end
+    push!(gl,length(mod.y)-rank(mod.X)) # Grados de libertad de los residuales
+    return tuple(gl...)
+end
+
+function CM2(mod::Model)
+    cm = []
+    sc = SC2(mod)
+    gl = gl2(mod)
+    for i in 1:length(sc)
+        push!(cm,sc[i]/gl[i])
+    end
+    return tuple(cm...)
+end
+
+function FStat2(mod::Model)
+    fStat = []
+    cm = CM2(mod)
+    σ = CM1(mod)[end-1]
+    for λ in cm
+        push!(fStat,λ/σ)
+    end
+    return tuple(fStat...)
+end
+
+function pValue2(mod::Model)
+    pv = []
+    gl = gl2(mod)
+    fStats = FStat2(mod)
+    for i in 1:length(fStats)
+        push!(pv,ccdf(FDist(gl[i],gl[end]),fStats[i]))
+    end
+    return tuple(pv...)
+end
+
+function anova2(mod::Model)
+    sc = SC2(mod)
+    cm = CM2(mod)
+    gl = gl2(mod)
+    fs = FStat2(mod)
+    pv = pValue2(mod)
+    table = DataFrame(
+        Variable=[(string.(mod.names[2:end]))...],
+        df = [gl[1:(end-1)]...],
+        SS = [sc...],
+        MS = [cm...],
+        F = [fs...],
+        pValue = [pv...])
+    return table
+end
+
 
 #--- Otras funciones
 
 function summary(mod::Model)
-
+    σ = CM1(mod)[end-1]
+    sc = SC1(mod)
+    cm = CM1(mod)
+    regression = regAn(mod)
+    R = regression[1]/sc[end]
+    R_adj = 1 - σ/cm[end]
+    F = regression[end-1]
+    pVal = regression[end]
+    n = length(mod.y)
+    k = length(mod.names)-1
+    gl = rank(mod.X)
+    return (σ=σ,R²=R,R²adj=R_adj,Fstat=F,pValue=pVal,N_Obs=n,N_Var=k,regDF=gl)
 end

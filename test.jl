@@ -26,3 +26,8 @@ residuals(mod)
 
 
 anova1(mod)
+
+anova2(mod)
+
+
+summary(mod).σ
