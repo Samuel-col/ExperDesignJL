@@ -12,7 +12,7 @@ struct Factor # Representa factores
     function Factor(x)
         levels = x |> unique |> sort #  Vector de niveles
         convert = Dict{Any,Int64}() # Diccionario de traducción
-        i = 1
+        i = 0
         for l in levels
             convert[l] = i
             i += 1
