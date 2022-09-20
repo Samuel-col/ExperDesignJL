@@ -2,7 +2,6 @@ using CSV,DataFrames
 
 cd("/home/samuel/Documentos/ExperDesignJL/")
 
-# include("objetos.jl")
 include("src/main.jl")
 
 # using ExperimentsDesign
