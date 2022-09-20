@@ -45,6 +45,8 @@ summary(mod).σ
 
 using StatsPlots
 
+gr(minorgrid = true)
+
 begin
     scatter(YEst(mod),residuals(mod),legend = false,
         color = :cyan,shape = :star)
