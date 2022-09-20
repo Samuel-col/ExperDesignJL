@@ -20,7 +20,6 @@ mod = Model(df,(true,false,true,true,true),:Tired,:Enough,:Hours,:PhoneReach,:Ph
 # Los siguientes argumentos son las variables explicativas. Deben ser tantas como entradas
 #  tenga la tupla del segundo argumento.
 
-
 display(mod.X)
 
 display(mod.names)
@@ -41,3 +40,21 @@ anova2(mod)
 summary(mod)
 
 summary(mod).σ
+
+
+
+using StatsPlots
+
+begin
+    scatter(YEst(mod),residuals(mod),legend = false,
+        color = :cyan,shape = :star)
+    xlabel!("Y estimado")
+    ylabel!("Residuales")
+    title!("Supuesto de No Autocorrelación")
+end
+
+begin
+    boxplot(residuals(mod),legend = false,
+        color = :blueviolet,notch = true)
+    ylabel!("Residuales")
+end

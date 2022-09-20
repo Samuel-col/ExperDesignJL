@@ -3,6 +3,7 @@ using LinearAlgebra, Distributions, DataFrames
 
 import Base: summary
 import LinearAlgebra: rank
+import Base: display
 
 struct Factor # Representa factores
     val::Array{Int64,1} # Valores del vector
@@ -24,6 +25,10 @@ struct Factor # Representa factores
 
         new(formated,levels) # Creación del objeto
     end
+end
+
+function display(f::Factor)
+    dump(f)
 end
 
 struct Model
@@ -57,6 +62,10 @@ struct Model
     end
 end
 
+function display(m::Model)
+    dump(m)
+end
+
 function gInvS(A::Matrix)
     if A'!=A
         error("La matriz no es simétrica.")
@@ -67,6 +76,7 @@ function gInvS(A::Matrix)
     GInv[cols,cols] = inv(A[cols,cols])
     return GInv
 end
+
 function gInvS(A::Real)
     return 1/A
 end
