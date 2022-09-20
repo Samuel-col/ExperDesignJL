@@ -1,4 +1,3 @@
-
 using LinearAlgebra, Distributions, DataFrames, StatsPlots
 
 import Base: summary
@@ -12,16 +11,10 @@ struct Factor # Representa factores
     # Método Constructivo
     function Factor(x)
         levels = x |> unique |> sort #  Vector de niveles
-        convert = Dict{Any,Int64}() # Diccionario de traducción
-        i = 0
-        for l in levels
-            convert[l] = i
-            i += 1
-        end
-        formated = x |> length |> zeros .|> Int
-        for i in 1:length(x)
-            formated[i] = convert[x[i]]
-        end
+        
+        convert = Dict(zip(levels,1:length(levels))) # Diccionario de conversión
+
+        formated = get.(Ref(convert),x,0) 
 
         new(formated,levels) # Creación del objeto
     end
@@ -48,13 +41,13 @@ struct Model
                 X = hcat(X,data[:,names[i]])
                 push!(Xi,data[:,names[i]])
             else
-                tmp = ones(n,1)
                 fac = Factor(data[:,names[i]])
-                for lev in 1:length(fac.lev)
-                    X = hcat(X,fac.val .== lev) # Creación de la matriz diseño
-                    tmp = hcat(tmp,fac.val .== lev)
-                end
-                push!(Xi,tmp[:,2:end])
+
+                tmp = hcat([fac.val .== l for l in 1:length(fac.lev)]...)
+
+                X = hcat(X,tmp)
+
+                push!(Xi,Matrix(tmp))
             end
         end
         y = data[:,names[1]]
@@ -131,14 +124,10 @@ end
 
 
 function gl1(mod::Model)
-    gl = []
-    for i = 2:length(mod.Xi) # Grados de libertad de la regresión
-        if rank(mod.Xi[i])!=1
-            push!(gl,rank(mod.Xi[i])-1)
-        else
-            push!(gl,1)
-        end
-    end
+
+    # Grados de libertad de la regresión
+    gl = [rank(xi) == 1 ? 1 : rank(xi) - 1 for xi in mod.Xi[2:end]]
+
     push!(gl,length(mod.y)-rank(mod.X)) # Grados de libertad de los residuales
     push!(gl,length(mod.y)-1) # Grados de libertad totales
     return tuple(gl...)
@@ -148,28 +137,23 @@ function CM1(mod::Model)
     cm = []
     sc = SC1(mod)
     gl = gl1(mod)
-    for i in 1:length(sc)
-        push!(cm,sc[i]/gl[i])
-    end
-    return tuple(cm...)
+    
+    return sc ./ gl
 end
 
 function FStat1(mod::Model)
     fStat = []
     cm = CM1(mod)
-    for i = 1:(length(cm)-2)
-        push!(fStat,cm[i]/cm[end-1])
-    end
-    return tuple(fStat...)
+    
+    return cm[1:(end-2)] ./ cm[end - 1]
 end
 
 function pValue1(mod::Model)
-    pv = []
     gl = gl1(mod)
     fStats = FStat1(mod)
-    for i = 1:length(fStats)
-        push!(pv, ccdf(FDist(gl[i],gl[end-1]),fStats[i]))
-    end
+
+    pv = [ccdf(FDist(gl[i],gl[end-1]),fStats[i]) for i in 1:length(fStats)]
+
     return tuple(pv...)
 end
 
@@ -224,45 +208,36 @@ function SC2(mod::Model)
 end
 
 function gl2(mod::Model)
-    gl = []
-    for i = 2:length(mod.Xi) # Grados de libertad de la regresión
-        if rank(mod.Xi[i])!=1
-            push!(gl,rank(mod.Xi[i])-1)
-        else
-            push!(gl,1)
-        end
-    end
+    
+    gl = [rank(xi) == 1 ? 1 : rank(xi) - 1 for xi in mod.Xi[2:end]]
+
     push!(gl,length(mod.y)-rank(mod.X)) # Grados de libertad de los residuales
     return tuple(gl...)
 end
 
 function CM2(mod::Model)
-    cm = []
+
     sc = SC2(mod)
     gl = gl2(mod)
-    for i in 1:length(sc)
-        push!(cm,sc[i]/gl[i])
-    end
-    return tuple(cm...)
+
+    return sc ./ gl[1:(end-1)]
 end
 
 function FStat2(mod::Model)
-    fStat = []
+
     cm = CM2(mod)
     σ = CM1(mod)[end-1]
-    for λ in cm
-        push!(fStat,λ/σ)
-    end
-    return tuple(fStat...)
+    
+    return cm ./ σ
 end
 
 function pValue2(mod::Model)
-    pv = []
+
     gl = gl2(mod)
     fStats = FStat2(mod)
-    for i in 1:length(fStats)
-        push!(pv,ccdf(FDist(gl[i],gl[end]),fStats[i]))
-    end
+    
+    pv = [ccdf(FDist(gl[i],gl[end]),fStats[i]) for i in 1:length(fStats)]
+    
     return tuple(pv...)
 end
 
@@ -284,22 +259,6 @@ end
 
 
 #--- Otras funciones
-
-# function summary(mod::Model)
-#     σ = CM1(mod)[end-1]
-#     sc = SC1(mod)
-#     cm = CM1(mod)
-#     regression = regAn(mod)
-#     R = regression[1]/sc[end]
-#     R_adj = 1 - σ/cm[end]
-#     F = regression[end-1]
-#     pVal = regression[end]
-#     n = length(mod.y)
-#     k = length(mod.names)-1
-#     gl = rank(mod.X)
-#     return (σ=σ,R²=R,R²adj=R_adj,Fstat=F,pValue=pVal,N_Obs=n,N_Var=k,regDF=gl)
-# end
-
 
 
 struct ModelSummary  # Resumen de un modelo
