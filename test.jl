@@ -69,4 +69,6 @@ plotResiduals(mod)
 
 plotResiduals(mod;factor = :Tired)
 
+plotResiduals(mod;factor = :PhoneReach)
+
 qqplotResiduals(mod)
