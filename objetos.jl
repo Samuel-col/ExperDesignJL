@@ -285,17 +285,56 @@ end
 
 #--- Otras funciones
 
-function summary(mod::Model)
-    σ = CM1(mod)[end-1]
-    sc = SC1(mod)
-    cm = CM1(mod)
-    regression = regAn(mod)
-    R = regression[1]/sc[end]
-    R_adj = 1 - σ/cm[end]
-    F = regression[end-1]
-    pVal = regression[end]
-    n = length(mod.y)
-    k = length(mod.names)-1
-    gl = rank(mod.X)
-    return (σ=σ,R²=R,R²adj=R_adj,Fstat=F,pValue=pVal,N_Obs=n,N_Var=k,regDF=gl)
+# function summary(mod::Model)
+#     σ = CM1(mod)[end-1]
+#     sc = SC1(mod)
+#     cm = CM1(mod)
+#     regression = regAn(mod)
+#     R = regression[1]/sc[end]
+#     R_adj = 1 - σ/cm[end]
+#     F = regression[end-1]
+#     pVal = regression[end]
+#     n = length(mod.y)
+#     k = length(mod.names)-1
+#     gl = rank(mod.X)
+#     return (σ=σ,R²=R,R²adj=R_adj,Fstat=F,pValue=pVal,N_Obs=n,N_Var=k,regDF=gl)
+# end
+
+
+
+struct ModelSummary  # Resumen de un modelo
+    σ::Float64       # Varianza de los residuales
+    R²::Float64      # Coeficiente de Determinación
+    R²adj::Float64   # Coeficiente de Determinación ajustado
+    Fstat::Float64   # Estadística F
+    pValue::Float64  # Valor p
+    N_Obs::Int       # Número de observaciones
+    N_Var::Int       # Número de variables (explicativas)
+    regDF::Int       # Grados de libertad del modelo
+
+
+    # Método Constructivo
+    function ModelSummary(x)
+        σ = CM1(mod)[end-1]
+        sc = SC1(mod)
+        cm = CM1(mod)
+        regression = regAn(mod)
+        R = regression[1]/sc[end]
+        R_adj = 1 - σ/cm[end]
+        F = regression[end-1]
+        pVal = regression[end]
+        n = length(mod.y)
+        k = length(mod.names)-1
+        gl = rank(mod.X)
+
+        new(σ,R,R_adj,F,pVal,n,k,gl)
+    end
+end
+
+function display(s::ModelSummary)
+    dump(s)
+end
+
+function summary(m::Model)
+    return ModelSummary(m)
 end
