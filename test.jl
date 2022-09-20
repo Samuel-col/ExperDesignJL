@@ -1,12 +1,14 @@
 using CSV,DataFrames
 
-cd("/Archivos/A/Julia/DiseñoDeExperimentos/")
+cd("/home/samuel/Documentos/ExperDesignJL/")
 
 include("objetos.jl")
 
 # using ExperimentsDesign
 
 df = CSV.File("data/SleepStudyData.csv") |> DataFrame
+
+CSV.read("data/SleepStudyData.csv",DataFrame)
 
 df = dropmissing(df)
 
@@ -29,5 +31,6 @@ anova1(mod)
 
 anova2(mod)
 
+summary(mod)
 
 summary(mod).σ
