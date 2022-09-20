@@ -42,6 +42,7 @@ summary(mod)
 summary(mod).σ
 
 
+# Gráficos
 
 using StatsPlots
 
@@ -60,3 +61,12 @@ begin
         color = :blueviolet,notch = true)
     ylabel!("Residuales")
 end
+
+
+
+
+plotResiduals(mod)
+
+plotResiduals(mod;factor = :Tired)
+
+qqplotResiduals(mod)
