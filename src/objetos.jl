@@ -30,6 +30,7 @@ struct Model
     X::Array{<:Real,2} # Matriz diseño
     Xi::Array{Any,1} # Matrices asociadas a cada factor
     names::Tuple{Vararg{Symbol}} # Tupla de nombres
+    df::DataFrame # DataFrame original
 
     # Método Constructivo
     function Model(data::DataFrame,factor::Tuple{Vararg{Bool}},names...)
@@ -52,12 +53,17 @@ struct Model
             end
         end
         y = data[:,names[1]]
-        new(y,X,Xi,names)
+        new(y,X,Xi,names,data)
     end
 end
 
 function display(m::Model)
-    dump(m)
+    println("""
+        Model:
+            y = $(m.names[1])
+            x = $(m.names[2:end])
+        with $(length(m.y)) observations.
+    """)
 end
 
 
@@ -74,7 +80,7 @@ struct ModelSummary  # Resumen de un modelo
 
 
     # Método Constructivo
-    function ModelSummary(x)
+    function ModelSummary(mod)
         σ = CM1(mod)[end-1]
         sc = SC1(mod)
         cm = CM1(mod)

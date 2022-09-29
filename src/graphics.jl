@@ -19,7 +19,7 @@ function plotResiduals(mod::Model;factor::Union{Symbol,Missing} = missing)
     end
 
 
-    boxplot(df[:,factor],residuals(mod),legend = false,
+    boxplot(mod.df[:,factor],residuals(mod),legend = false,
         color = :blueviolet)
     xlabel!(string(factor))
     title!("Residuals Homocedasticity")

@@ -1,10 +1,18 @@
-include("objetos.jl")
+module ExprDesign
 
-include("base_functions.jl")
+    export Factor, Model, summary, display
+    export residuals, YEst, θ, EstimableBase
+    export anova1, regAn, anova2
+    export plotResiduals, qqplotResiduals
+    
+    include("objetos.jl")
 
-include("anova_type1.jl")
+    include("base_functions.jl")
 
-include("anova_type2.jl")
+    include("anova_type1.jl")
 
-include("graphics.jl")
+    include("anova_type2.jl")
 
+    include("graphics.jl")
+
+end

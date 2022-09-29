@@ -60,7 +60,6 @@ function stringBreak(s::String,indices::Vector{Int})::Vector{String}
 end
 
 function readFormula(s::String)
-    specialChar = ['~','+','*',':']
     
     s = removeChar(' ',s)
     l = length(s)
