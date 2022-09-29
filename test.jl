@@ -3,6 +3,7 @@ using CSV,DataFrames
 cd("/home/samuel/Documentos/ExperDesignJL/")
 
 include("src/main.jl")
+using .ExprDesign
 
 # using ExperimentsDesign
 
@@ -30,7 +31,7 @@ EstimableBase(mod)
 
 YEst(mod)
 
-residuals(mod)
+ExprDesign.residuals(mod)
 
 
 anova1(mod)
@@ -49,7 +50,7 @@ using StatsPlots
 gr(minorgrid = true)
 
 begin
-    scatter(YEst(mod),residuals(mod),legend = false,
+    scatter(YEst(mod),ExprDesign.residuals(mod),legend = false,
         color = :cyan,shape = :star)
     xlabel!("Y estimado")
     ylabel!("Residuales")
@@ -57,7 +58,7 @@ begin
 end
 
 begin
-    boxplot(residuals(mod),legend = false,
+    boxplot(ExprDesign.residuals(mod),legend = false,
         color = :blueviolet,notch = true)
     ylabel!("Residuales")
 end
